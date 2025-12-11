@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur Psychrométrique</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calculateur Psychrométrique</h1>
+            <p>Calcul complet des propriétés thermodynamiques de l'air humide</p>
+        </header>
+
+        <div class="layout">
+            <!-- LEFT PANEL: CONTROLS -->
+            <section id="controls">
+                <h2>Entrées</h2>
+
+                <div class="radio-group">
+                    <div class="radio-item">
+                        <input type="radio" id="processType1" name="processType" value="single" checked>
+                        <label for="processType1">Propriétés d'état unique</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="var1">Variable indépendante 1</label>
+                    <select id="var1">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="tdb">Température sèche (Tdb) [°C]</option>
+                        <option value="w">Ratio d'humidité (W) [kg_w/kg_da]</option>
+                        <option value="rh">Humidité relative (RH) [%]</option>
+                        <option value="h">Enthalpie (h) [kJ/kg_da]</option>
+                        <option value="twb">Température humide (Twb) [°C]</option>
+                        <option value="tdp">Température de rosée (Tdp) [°C]</option>
+                        <option value="pv">Pression de vapeur (Pv) [Pa]</option>
+                        <option value="m_da">Débit masse air sec (ṁ_da) [kg/s]</option>
+                        <option value="v_dot">Débit volumétrique (V̇) [m³/h]</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="val1">Valeur 1</label>
+                    <input type="number" id="val1" placeholder="Entrez la valeur" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label for="var2">Variable indépendante 2</label>
+                    <select id="var2">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="tdb">Température sèche (Tdb) [°C]</option>
+                        <option value="w">Ratio d'humidité (W) [kg_w/kg_da]</option>
+                        <option value="rh">Humidité relative (RH) [%]</option>
+                        <option value="h">Enthalpie (h) [kJ/kg_da]</option>
+                        <option value="twb">Température humide (Twb) [°C]</option>
+                        <option value="tdp">Température de rosée (Tdp) [°C]</option>
+                        <option value="pv">Pression de vapeur (Pv) [Pa]</option>
+                        <option value="m_da">Débit masse air sec (ṁ_da) [kg/s]</option>
+                        <option value="v_dot">Débit volumétrique (V̇) [m³/h]</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="val2">Valeur 2</label>
+                    <input type="number" id="val2" placeholder="Entrez la valeur" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label for="m_da_ref">Débit masse air sec (référence) [kg/s]</label>
+                    <input type="number" id="m_da_ref" value="1.0" step="0.01" min="0.001">
+                </div>
+
+                <button class="advanced-toggle" id="advToggle">⚙️ Paramètres avancés</button>
+                <div class="advanced-panel" id="advPanel">
+                    <div class="form-group">
+                        <label for="p_total">Pression totale (P_total) [Pa]</label>
+                        <input type="number" id="p_total" value="101325" step="1">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="calcBtn" class="btn btn--primary">Calculer</button>
+                    <button id="exampleBtn" class="btn btn--secondary">Exemple</button>
+                </div>
+
+                <div class="error-box" id="errorBox"></div>
+                <div class="success-box" id="successBox">
+                    <span class="test-icon">✓</span>
+                    <span id="successMsg"></span>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: RESULTS & CHART -->
+            <section id="results" style="display: none;">
+                <h2>Résultats</h2>
+                
+                <div class="precision-toggle">
+                    <button class="precision-btn active" data-prec="4">4 chiffres</button>
+                    <button class="precision-btn" data-prec="6">6 chiffres</button>
+                    <button class="precision-btn" data-prec="8">8 chiffres</button>
+                </div>
+
+                <div class="tabs-container">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="table">Tableau</button>
+                        <button class="tab-btn" data-tab="chart">Diagramme</button>
+                    </div>
+
+                    <div id="table-content" class="tab-content active">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Propriété</th>
+                                    <th>Unité</th>
+                                    <th>Valeur</th>
+                                    <th style="width: 30px;">ℹ️</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="chart-content" class="tab-content">
+                        <div class="chart-container">
+                            <canvas id="psychrometricChart" width="600" height="500"></canvas>
+                        </div>
+                        <p class="chart-note">Point calculé en rouge • Courbe de saturation en bleu</p>
+                    </div>
+                </div>
+
+                <div class="test-results" id="testResults"></div>
+            </section>
+        </div>
+
+        <!-- MODAL: Variable Explanation -->
+        <div class="modal" id="explanationModal">
+            <div class="modal-content">
+                <button class="modal-close" id="closeModal">&times;</button>
+                <h3 id="explanationTitle"></h3>
+                <p id="explanationText"></p>
+                <div class="modal-footer">
+                    <button class="btn btn--primary" id="closeModalBtn">Fermer</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            © 2025 Mohamed Ayoub Essalami | Calculateur Psychrométrique
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
